@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.zerock.mapper.ReplyMapper">
+
+	<select id="list" resultType="ReplyVO">
+		select
+		*
+		from
+		tbl_reply
+		where id =
+		#{id}
+		order by num desc
+	</select>
+
+	<insert id="create">
+		insert into tbl_reply (id, replytext, replyer)
+		values (#{id},#{replytext},#{replyer})
+	</insert>
+
+	<update id="update">
+		update tbl_reply set replytext = #{replytext},
+		updatedate = now()
+		where num = #{num}
+	</update>
+
+	<delete id="delete">
+		delete from tbl_reply where num =#{num}
+	</delete>
+
+
+	<select id="listPage" resultType="ReplyVO">
+		select
+		*
+		from
+		tbl_reply
+		where
+		id = #{id}
+		order by num desc
+		limit #{cri.pageStart}, #{cri.perPageNum}
+	</select>
+
+	<select id="count" resultType="int">
+		select count(id) from tbl_reply where id =#{id}
+	</select>
+
+
+</mapper>
+
