@@ -22,6 +22,7 @@ import org.zerock.domain.Criteria;
 import org.zerock.domain.PageMaker;
 import org.zerock.persistence.BoardDAO;
 import org.zerock.service.BoardService;
+import org.zerock.test.UserHibernateProviderImpl;
 
 /**
  * Handles requests for the application home page.
@@ -53,7 +54,7 @@ public class HomeController {
 	@Inject
 	private BoardService service;
 
-	@RequestMapping(value = "/", method = RequestMethod.GET, produces="application/json; charset=UTF-8")
+	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public String registerGET(BoardVO board,Model model)throws Exception {
 		//logger.info(board.toString());
 		//insert
@@ -67,53 +68,54 @@ public class HomeController {
 //	public String read(@RequestParam("id") int id, Model model)throws Exception{
 //		
 //		model.addAttribute(service.read(id));
-//		//Á¶È¸¼ö ¾÷µ¥ÀÌÆ®
+//		//ï¿½ï¿½È¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
 //		dao.updateview(id);
 //	
 //		return "board_view";
 //	}
-	@RequestMapping(value = "board_viewPage", method = RequestMethod.GET, produces="application/json; charset=UTF-8")
+	@RequestMapping(value = "board_viewPage", method = RequestMethod.GET)
 	public String read(@RequestParam("id") int id,@ModelAttribute("cri") Criteria cri, Model model)throws Exception{
 		
 		model.addAttribute(service.read(id));
-		//Á¶È¸¼ö ¾÷µ¥ÀÌÆ®
+		//ï¿½ï¿½È¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
 		dao.updateview(id);
 	
 		return "board_viewPage";
 	}
-	//±Û¾²±â Çü½Ä
-	@RequestMapping(value="board_insertForm", produces="application/json; charset=UTF-8")
+	//ï¿½Û¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½d
+	@RequestMapping(value="board_insertForm")
 	public String insertForm(Model model) {
 	
 		SimpleDateFormat dayTime = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 		Date currentTime = new Date();
-		//ÇöÀç½Ã°£
+		//ï¿½ï¿½ï¿½ï¿½Ã°ï¿½
 		model.addAttribute("datetime", dayTime.format(currentTime));
 		return "board_insertForm";
 	}
-	//Ãë¼Ò¹öÆ°(¸ñ·Ï¹öÆ°)
+	//ï¿½ï¿½Ò¹ï¿½Æ°(ï¿½ï¿½Ï¹ï¿½Æ°)
 	@RequestMapping("list")
 	public String list() {
 		
 		return "redirect:/";
 	}
 
-	//¾²±â¹öÆ°
-	@RequestMapping(value="board_write",method = RequestMethod.POST, produces="application/json; charset=UTF-8")
+	//ï¿½ï¿½ï¿½ï¿½ï¿½Æ°
+	@RequestMapping(value="board_write",method = RequestMethod.POST)
 	public String write(BoardVO board)throws Exception {
 		logger.info(board.toString());
+		
 		service.regist(board);
 		return "redirect:/";
 	}
-	//¼öÁ¤ Çü½Ä
-	@RequestMapping(value="board_updateForm", method = RequestMethod.GET, produces="application/json; charset=UTF-8")
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	@RequestMapping(value="board_updateForm", method = RequestMethod.GET)
 	public String updateForm(@RequestParam("id") int id,@ModelAttribute("cri") Criteria cri, Model model)throws Exception{
-		//sql½ÇÇàÇÒ¶© ¸ðµ¨ÀÌ ÇÊ¿ä¾øÁö¸¸, °ªÀ» ³Ñ±æ¶© ÇÊ¿äÇÔ
+		//sqlï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½Ñ±æ¶© ï¿½Ê¿ï¿½ï¿½ï¿½
 		model.addAttribute(service.read(id));
 		return "board_updateForm";
 	}
-	//¼öÁ¤¹öÆ°
-	@RequestMapping(value="board_update", method = RequestMethod.POST, produces="application/json; charset=UTF-8")
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ°
+	@RequestMapping(value="board_update", method = RequestMethod.POST)
 	public String update(@RequestParam("id") int id, @RequestParam("title") String title,
 			@RequestParam("content") String content,BoardVO board,Criteria cri, RedirectAttributes rttr)throws Exception {
 //		BoardVO bo = new BoardVO();
@@ -130,8 +132,8 @@ public class HomeController {
 		
 		return "redirect:board_listPage";
 	}
-	//»èÁ¦¹öÆ°
-	@RequestMapping(value="board_delete", method = RequestMethod.POST, produces="application/json; charset=UTF-8")
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ°
+	@RequestMapping(value="board_delete", method = RequestMethod.POST)
 	public String delete(@RequestParam("id") int id,
 			Criteria cri,
 				RedirectAttributes rttr)throws Exception{
@@ -144,7 +146,7 @@ public class HomeController {
 		
 		return "redirect:board_listPage";
 	}
-	@RequestMapping(value = "board_listPage", method = RequestMethod.GET, produces="application/json; charset=UTF-8")
+	@RequestMapping(value = "board_listPage", method = RequestMethod.GET)
 	public String testpage(@ModelAttribute("cri")Criteria cri,Model model)throws Exception {
 	
 		model.addAttribute("list", service.listCriteria(cri));

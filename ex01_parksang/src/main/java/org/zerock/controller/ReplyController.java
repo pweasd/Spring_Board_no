@@ -19,7 +19,7 @@ import org.zerock.domain.ReplyVO;
 import org.zerock.service.ReplyService;
 
 @RestController
-@RequestMapping("replies")
+@RequestMapping("/replies")
 public class ReplyController {
 	
 	@Inject
@@ -53,7 +53,7 @@ public class ReplyController {
 		return entity;
 	}
 	//¼öÁ¤ test
-	@RequestMapping(value = "/{num}", method = { RequestMethod.PUT, RequestMethod.PATCH })
+	@RequestMapping(value = "/{num}", method = {RequestMethod.PUT, RequestMethod.PATCH})
 	  public ResponseEntity<String> update(@PathVariable("num") Integer num, @RequestBody ReplyVO vo) {
 
 	    ResponseEntity<String> entity = null;

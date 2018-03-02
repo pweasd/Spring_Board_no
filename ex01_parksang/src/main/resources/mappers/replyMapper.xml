@@ -43,7 +43,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	</select>
 
 	<select id="count" resultType="int">
-		select count(id) from tbl_reply where id =#{id}
+		select count(id) from tbl_reply where id = #{id}
 	</select>
 
 

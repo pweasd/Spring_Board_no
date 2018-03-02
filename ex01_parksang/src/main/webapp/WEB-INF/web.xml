@@ -29,6 +29,21 @@
 		<servlet-name>appServlet</servlet-name>
 		<url-pattern>/</url-pattern>
 	</servlet-mapping>
+			<!-- 한글깨짐 방지 -->
+	<filter>
+	  <filter-name>encoding</filter-name>
+	  <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+	  <init-param>
+	   <param-name>encoding</param-name>
+	   <param-value>UTF-8</param-value>
+	  </init-param>
+	</filter>
+	
+	<filter-mapping>
+	  <filter-name>encoding</filter-name>
+	  <url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
 <!-- input hidden과 같은 방식을 REST에서도 사용가능하게끔 -->
 	<filter>
 		<filter-name>hiddenHttpMethodFilter</filter-name>

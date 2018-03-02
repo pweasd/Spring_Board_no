@@ -104,7 +104,7 @@
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
-			<version>1.2.15</version>
+			<version>1.2.13</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.mail</groupId>
@@ -156,9 +156,26 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
+			<version>4.9</version>
 			<scope>test</scope>
-		</dependency>        
+		</dependency>
+		<!-- hibernate -->
+ <dependency>
+ <groupId>org.hibernate</groupId>
+ <artifactId>hibernate-core</artifactId>
+ <version>4.3.5.Final</version>
+ </dependency>
+<dependency>
+ <groupId>c3p0</groupId>
+ <artifactId>c3p0</artifactId>
+ <version>0.9.1</version>
+ </dependency>
+ <dependency>
+ <groupId>org.hsqldb</groupId>
+ <artifactId>hsqldb</artifactId>
+ <version>2.3.2</version>
+ </dependency>
+   
 	</dependencies>
     <build>
         <plugins>

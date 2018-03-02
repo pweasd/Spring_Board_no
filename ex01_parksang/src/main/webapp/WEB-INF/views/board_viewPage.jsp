@@ -1,63 +1,205 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head lang="en">
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="<c:url value="/resources/css/bootstrap.css" />" rel="stylesheet">
-<!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script> -->
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<script src="//code.jquery.com/jquery-3.2.1.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.11/handlebars.min.js"></script><!-- 핸들러 -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
-<script>
-function button_click(str){	
-	if(str=="updateDB") {
-		alert('업데이트');
-		myForm.method='GET';
-		myForm.action='board_updateForm';	//form이름.action='버튼눌렀을때 가고싶은 페이지'		
-	}
+<head>
+<!-- 한글 -->
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!-- Bootstrap 4.0 -->
+<link rel="stylesheet" href="/resources/css/bootstrap.css" />
+<!-- jQuery -->
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+<!-- Bootstrap Handlebar -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/3.0.1/handlebars.js"></script>
+<!-- Bootstrap Javascript -->
+<!-- <script src="/resources/js/bootstrap.min.js"></script> -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 
-	else if(str=="deleteDB"){
-		myForm.action='board_delete';
-	}
-	//else if(str=="reply"){
-		//myForm.action='reply.jsp';
-	//}
-	else if(str=="relist") {
-		alert("목록");
-		myForm.method='GET';
-		myForm.action='board_listPage';
-	}
 
-}
-</script>
 <script id="template" type="text/x-handlebars-template">
+<table class="table table-bordered">
 {{#each .}}
-<li class="replyLi" data-num={{num}}>
-<i class="fa fa-comments bg-blue"></i>
- <div class="timeline-item" >
-  <span class="time">
-    <i class="fa fa-clock-o"></i>{{prettifyDate regdate}}
-  </span>
-  <h3 class="timeline-header"><strong>{{num}}</strong> -{{replyer}}</h3>
-  <div class="timeline-body">{{replytext}} </div>
-    <div class="timeline-footer">
-     <a class="btn btn-info btn-xs" 
-	    data-toggle="modal" data-target="#modifyModal">Modify</a>
-    </div>
-  </div>			
-</li>
+<tr class="replyLi" data-num={{num}}>
+	<td class="timeline-item">
+		<p class="timeline-header text-secondary font-weight-light">{{num}} - {{replyer}}<br>{{prettifyDate regdate}}</p>
+		
+		<p class="timeline-body font-weight-bold">{{replytext}}</p>
+		
+		<div class="timeline-footer">
+			<a class="btn btn-light" role="button" data-toggle="modal" data-target="#modifyModal" id="test">댓글 수정</a>
+			
+		</div>
+	</td>
+</tr>
 {{/each}}
+</table>
 </script>
+
+<script>
+	Handlebars.registerHelper("prettifyDate", function(timeValue) {
+	var dateObj = new Date(timeValue);
+	var year = dateObj.getFullYear();
+	var month = dateObj.getMonth() + 1;
+	var date = dateObj.getDate();
+	return year + "/" + month + "/" + date;
+});
+
+	var printData = function(replyArr, target, templateObject) {
+
+		var template = Handlebars.compile(templateObject.html());
+
+		var html = template(replyArr);
+		$(".replyLi").remove();
+		target.after(html);
+
+	}
+</script>
+<script>
+	var id = ${boardVO.id};
+	
+	var replyPage = 1;
+
+	$(document).ready(function() {
+		//$("#test").click(function(){
+			//alert("눌렸냐");
+			//console.log("#test");
+		//});
+		function getPage(pageInfo) {
+			$.getJSON(pageInfo, function(data) {
+				printData(data.list, $("#repliesDiv"), $('#template'));
+				printPaging(data.pageMaker, $(".pagination"));
+				
+				$("#modifyModal").modal('hide');
+			});
+		}
+		
+		var printPaging = function(pageMaker, target) {
+			var str = "";
+			
+			if (pageMaker.prev) {
+				str += "<li class='page-item'><a class='page-link' href='"+(pageMaker.startPage-1)+"'> << </a></li>";
+			}
+			
+			for (var i=pageMaker.startPage, len=pageMaker.endPage; i <= len; i++) {
+				var strClass = pageMaker.cri.page == i? ' active' : '';
+				str += "<li class='page-item'"+strClass+"><a class='page-link' href='"+i+"'>"+i+"</a></li>";
+			}
+			
+			if (pageMaker.next) {
+				str += "<li class='page-item'><a class='page-link' href='"+(pageMaker.endPage + 1)+"'> >> </a></li>";
+			}
+			
+			target.html(str);
+		}
+		
+		$("#repliesDiv").on("click", function() {
+			
+			if($(".timeline li").size() > 1) {
+				return;
+			}
+			
+			getPage("/replies/" + id + "/1");
+		});
+		
+		$(".pagination").on("click", "li a", function(event) {
+			event.preventDefault();
+			replyPage = $(this).attr("href");
+			//alert("id: " + id + "/replyPage: " +replyPage);
+			getPage("/replies/" + id + "/" + replyPage);
+		
+		});
+		
+		$("#replyAddBtn").on("click", function() {
+			
+			var replyerObj = $("#newReplyWriter");
+			var replytextObj = $("#newReplyText");
+			var replyer = replyerObj.val();
+			var replytext = replytextObj.val();
+			
+			$.ajax({
+				type:'post',
+				url:'/replies/',
+				headers: {
+					"Content-type": "application/json",
+					"X-HTTP-Method-Override": "POST" },
+				dataType: 'text',
+				data: JSON.stringify({id:id, replyer:replyer, replytext:replytext}),
+				success:function(result) {
+					console.log("result:" + result);
+					if (result == 'SUCCESS') {
+						alert("댓글이 등록되었습니다.");
+						replyPage = 1;
+						getPage("/replies/" + id + "/" + replyPage);
+						replyerObj.val("");
+						replytextObj.val("");
+					}
+				}});
+		});
+		
+		$(".timeline").on("click", ".replyLi", function(event){
+			
+			var reply = $(this);
+			
+			$("#replytext").val(reply.find('.timeline-body').text());
+			$(".modal-title").html(reply.attr("data-num"));
+		
+		});
+		
+		$("#replyModBtn").on("click", function() {
+			
+			var num = $(".modal-title").html();
+			var replytext = $("#replytext").val();
+			//alert(comment_id);
+			//alert(comment_content);
+			
+			$.ajax({
+				type:'put',
+				url:'/replies/'+num,
+				headers: {
+					"Content-Type": "application/json",
+					"X-HTTP-Method-Override": "PUT" },
+					data:JSON.stringify({replytext:replytext}), 
+				dataType:'text',
+				success:function(result) {
+					console.log("result: " + result);
+					if (result == 'SUCCESS') {
+						alert("댓글이 수정되었습니다.");
+						getPage("/replies/"+id+"/"+replyPage);
+					}
+			}});
+		});
+		
+		$("#replyDelBtn").on("click", function() {
+			
+			var num = $(".modal-title").html();
+			var replytext = $("#replytext").val();
+			
+			$.ajax({
+				type:'delete',
+				url:'/replies/'+num,
+				headers: {
+					"Content-Type": "application/json",
+					"X-HTTP-Method-Override": "DELETE" },
+				dataType:'text',
+				success:function(result) {
+					console.log("result: " + result);
+					if (result == 'SUCCESS') {
+						alert("댓글이 삭제되었습니다.");
+						getPage("/replies/"+id+"/"+replyPage);
+					}
+			}});
+		});
+		
+		
+	});
+</script>
+
 <title>Insert title here</title>
+
 </head>
 <body>
-
 
 
 <!-- BoardVO가 아니라 boardVO -->
@@ -83,6 +225,23 @@ function button_click(str){
 	<th class="table-active"><font size=4 color=white><p class="text-center">내용</p></font></th><td><font size=4>${boardVO.content}</font></td>
 </tr>
 </table>
+<script type="text/javascript">
+function button_click(str){	
+	if(str=="updateDB") {
+		myForm.method='GET';
+		myForm.action='board_updateForm';		
+	}
+
+	if(str=="deleteDB") {
+		myForm.action='board_delete';
+	}
+	if(str=="relist") {
+		alert('리스트');
+		myForm.method='GET';
+		myForm.action='board_listPage';		
+	}
+}
+</script>
 <form method='post' name="myForm">
 <table width = 100%><!--글 수정 버튼, 삭제버튼-->
 
@@ -100,7 +259,7 @@ function button_click(str){
 
 </table>
 </form>
-<div class="row">
+	<div class="row">
 		<div class="col-md-12">
 
 			<div class="box box-success">
@@ -136,217 +295,31 @@ function button_click(str){
 		</div>
 	</div>
 
-<div id="modifyModal" class="modal modal-primary fade" role="dialog">
-  <div class="modal-dialog">
-    <!-- Modal content-->
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title"></h4>
-      </div>
-      <div class="modal-body" data-num>
-        <p><input type="text" id="replytext" class="form-control"></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-info" id="replyModBtn">Modify</button>
-        <button type="button" class="btn btn-danger" id="replyDelBtn">DELETE</button>
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>   
+	<div id="modifyModal" class="modal modal-primary fade" role="dialog">
+		<div class="modal-dialog">
+		
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title text-left"></h4>
+					<h3></h3>
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+				</div>
+				
+				<div class="modal-body" data-num>
+					<p><input type="text" id="replytext" class="form-control"></p>
+				</div>
+				
+				<div class="modal-footer">
+					<button type="button" class="btn btn-info" id="replyModBtn">수정</button>
+					<button type="button" class="btn btn-danger" id="replyDelBtn">삭제</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">닫기</button>
+				</div>
+			</div>
+			
+		</div>
+		
+	</div>
 </div>
-<script>
-	Handlebars.registerHelper("prettifyDate", function(timeValue) {
-		var dateObj = new Date(timeValue);
-		var year = dateObj.getFullYear();
-		var month = dateObj.getMonth() + 1;
-		var date = dateObj.getDate();
-		return year + "/" + month + "/" + date;
-	});
-
-	var printData = function(replyArr, target, templateObject) {
-
-		var template = Handlebars.compile(templateObject.html());
-
-		var html = template(replyArr);
-		$(".replyLi").remove();
-		target.after(html);
-
-	}
-
-	var id = ${boardVO.id};
-	
-	var replyPage = 1;
-
-	function getPage(pageInfo) {
-
-		$.getJSON(pageInfo, function(data) {
-			printData(data.list, $("#repliesDiv"), $('#template'));
-			printPaging(data.pageMaker, $(".pagination"));
-
-			$("#modifyModal").modal('hide');
-
-		});
-	}
-
-	var printPaging = function(pageMaker, target) {
-
-		var str = "";
-
-		if (pageMaker.prev) {
-			str += "<li><a href='" + (pageMaker.startPage - 1)
-					+ "'> << </a></li>";
-		}
-
-		for (var i = pageMaker.startPage, len = pageMaker.endPage; i <= len; i++) {
-			var strClass = pageMaker.cri.page == i ? 'class=active' : '';
-			str += "<li "+strClass+"><a href='"+i+"'>" + i + "</a></li>";
-		}
-
-		if (pageMaker.next) {
-			str += "<li><a href='" + (pageMaker.endPage + 1)
-					+ "'> >> </a></li>";
-		}
-
-		target.html(str);
-	};
-
-	$("#repliesDiv").on("click", function() {
-
-		if ($(".timeline li").size() > 1) {
-			return;
-		}
-		getPage("replies/" + id + "/1");
-
-	});
-	
-
-	$(".pagination").on("click", "li a", function(event){
-		
-		event.preventDefault();
-		
-		replyPage = $(this).attr("href");
-		
-		getPage("replies/"+id+"/"+replyPage);
-		
-	});
-	
-
-	$("#replyAddBtn").on("click",function(){
-		 
-		 var replyerObj = $("#newReplyWriter");
-		 var replytextObj = $("#newReplyText");
-		 var replyer = replyerObj.val();
-		 var replytext = replytextObj.val();
-		
-		  
-		  $.ajax({
-				type:'post',
-				url:'replies/',
-				headers: { 
-				      "Content-Type": "application/json",
-				      "X-HTTP-Method-Override": "POST" },
-				dataType:'text',
-				data: JSON.stringify({id:id, replyer:replyer, replytext:replytext}),
-				success:function(result){
-					console.log("result: " + result);
-					if(result == 'SUCCESS'){
-						alert("등록 되었습니다.");
-						replyPage = 1;
-						getPage("replies/"+id+"/"+replyPage );
-						replyerObj.val("");
-						replytextObj.val("");
-					}
-			}});
-	});
-
-
-	$(".timeline").on("click", ".replyLi", function(event){
-		
-		var reply = $(this);
-		
-		$("#replytext").val(reply.find('.timeline-body').text());
-		$(".modal-title").html(reply.attr("data-num"));
-		
-	});
-	
-	
-
-	$("#replyModBtn").on("click",function(){
-		  
-		  var num = $(".modal-title").html();
-		  var replytext = $("#replytext").val();
-		  
-		  $.ajax({
-				type:'put',
-				url:'replies/'+num,
-				headers: { 
-				      "Content-Type": "application/json",
-				      "X-HTTP-Method-Override": "PUT" },
-				data:JSON.stringify({replytext:replytext}), 
-				dataType:'text', 
-				success:function(result){
-					console.log("result: " + result);
-					if(result == 'SUCCESS'){
-						alert("수정 되었습니다.");
-						getPage("replies/"+id+"/"+replyPage );
-					}
-			}});
-	});
-
-	$("#replyDelBtn").on("click",function(){
-		  
-		  var num = $(".modal-title").html();
-		  var replytext = $("#replytext").val();
-		  
-		  $.ajax({
-				type:'delete',
-				url:'replies/'+num,
-				headers: { 
-				      "Content-Type": "application/json",
-				      "X-HTTP-Method-Override": "DELETE" },
-				dataType:'text', 
-				success:function(result){
-					console.log("result: " + result);
-					if(result == 'SUCCESS'){
-						alert("삭제 되었습니다.");
-						getPage("replies/"+id+"/"+replyPage );
-					}
-			}});
-	});
-	
-</script>
-
-
-<script>
-$(document).ready(function(){
-	
-	var formObj = $("form[role='form']");
-	
-	console.log(formObj);
-	
-	$("#modifyBtn").on("click", function(){
-		formObj.attr("action", "/sboard/modifyPage");
-		formObj.attr("method", "get");		
-		formObj.submit();
-	});
-	
-	$("#removeBtn").on("click", function(){
-		formObj.attr("action", "/sboard/removePage");
-		formObj.submit();
-	});
-	
-	$("#goListBtn ").on("click", function(){
-		formObj.attr("method", "get");
-		formObj.attr("action", "/sboard/list");
-		formObj.submit();
-	});
-	
-});
-</script>
-
-
 
 </body>
 </html>

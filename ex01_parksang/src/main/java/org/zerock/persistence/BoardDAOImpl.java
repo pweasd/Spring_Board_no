@@ -5,9 +5,12 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.apache.ibatis.session.SqlSession;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.springframework.stereotype.Repository;
 import org.zerock.domain.BoardVO;
 import org.zerock.domain.Criteria;
+import org.zerock.domain.HibernateUtil;
 
 @Repository
 public class BoardDAOImpl implements BoardDAO {
@@ -20,8 +23,13 @@ public class BoardDAOImpl implements BoardDAO {
 	
 	@Override
 	public void create(BoardVO vo) throws Exception {
-
-		session.insert(namespace+".create",vo);
+		 Session sessions = HibernateUtil.getSessionFactory().openSession();
+		 Transaction tx = sessions.beginTransaction();
+		 sessions.persist(vo);
+		
+		//session.insert(namespace+".create",vo);
+		 tx.commit();
+		 sessions.close();
 	}
 
 	@Override
